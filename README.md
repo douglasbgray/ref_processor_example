@@ -40,26 +40,9 @@ In researching, the problem lies in an [incomplete implementation](https://githu
  the `ExternalRefProcessor`. The method does not recurse in all situations, so depending on the contract, it can lead to
  an incomplete reference resolution.
 
-I was able to fix the issue by replacing that method with these 2 methods:
+I was able to fix the issue by replacing that method with these 3 methods:
 
 ```
-    private void processProperties(Map<String,Schema> subProps, String file) {
-        if (subProps != null) {
-            for (Map.Entry<String, Schema> prop : subProps.entrySet()) {
-                Schema subProp = prop.getValue();
-                if (StringUtils.isNotBlank(subProp.get$ref())) {
-                    processRefSchema(subProp, file);
-                } else if (subProp instanceof ArraySchema) {
-                    processProperty(((ArraySchema) subProp).getItems(), file);
-                } else if (subProp.getAdditionalProperties() instanceof Schema) {
-                    processProperty((Schema) subProp.getAdditionalProperties(), file);
-                } else if (subProp instanceof ObjectSchema) {
-                    processProperties(((ObjectSchema) subProp).getProperties(), file);
-                }
-            }
-        }
-    }
-
     private void processProperty(Schema subProp, String file) {
         if (subProp != null) {
             if (StringUtils.isNotBlank(subProp.get$ref())) {
@@ -69,20 +52,31 @@ I was able to fix the issue by replacing that method with these 2 methods:
                 processProperties(subProp.getProperties(), file);
             }
             if (subProp instanceof ArraySchema) {
-                Map<String, Schema> recursePropertiesMap = new LinkedHashMap<>();
-                recursePropertiesMap.put("ignoredArrayPropKey", subProp);
-                processProperties(recursePropertiesMap, file);
+                processProperty(((ArraySchema) subProp).getItems(), file);
             }
             if (subProp.getAdditionalProperties() instanceof Schema) {
-                Map<String, Schema> recursePropertiesMap = new LinkedHashMap<>();
-                recursePropertiesMap.put("ignoredMapPropKey", (Schema) subProp.getAdditionalProperties());
-                processProperties(recursePropertiesMap, file);
+                processProperty(((Schema) subProp.getAdditionalProperties()), file);
+            }
+            if (subProp instanceof ComposedSchema) {
+                ComposedSchema composed = (ComposedSchema) subProp;
+                processProperties(composed.getAllOf(), file);
+                processProperties(composed.getAnyOf(), file);
+                processProperties(composed.getOneOf(), file);
             }
         }
     }
+
+    private void processProperties(Collection<Schema> subProps, String file) {
+        if (subProps != null) {
+            for (Schema subProp : subProps) {
+                processProperty(subProp, file);
+            }
+        }
+    }
+
+    private void processProperties(Map<String, Schema> subProps, String file) {
+        if (subProps != null) {
+            processProperties(subProps.values(), file);
+        }
+    }
 ```
-
-It should be noted, that the method signature for `processProperties`, could accept a Collection<Schema> as the
- first argument, which would simplify the implementation of `processProperty`, with the trade-off of requiring
- changes in callers to `processProperties`.
-

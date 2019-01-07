@@ -63,3 +63,15 @@ components:
             type: object
             additionalProperties:
               $ref: './types.yaml#/components/schemas/Image'
+
+        # Expected property type = Object
+        oneOfExample:
+          type: object
+          oneOf:
+            - $ref: './types.yaml#/components/schemas/Image'
+
+        # Expected property type = Object
+        anyOfExample:
+          type: object
+          anyOf:
+            - $ref: './types.yaml#/components/schemas/Image'
