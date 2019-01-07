@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.dogray.playground</groupId>
+    <version>1.0-SNAPSHOT</version>
+    <artifactId>service-v3</artifactId>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <java.version>1.8</java.version>
+
+        <swagger.parser.version>2.0.7</swagger.parser.version>
+        <!--<swagger.parser.version>2.0.8-SNAPSHOT</swagger.parser.version>-->
+
+        <swagger.codegen.version>3.0.0</swagger.codegen.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.0.6</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.swagger.codegen.v3</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>${swagger.codegen.version}</version>
+                <executions>
+                    <execution>
+                        <id>1</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+
+                            <language>java</language>
+                            <inputSpec>${project.basedir}/src/main/resources/contract/openapi.yaml</inputSpec>
+
+                            <apiPackage>com.dogray.gen.api</apiPackage>
+                            <modelPackage>com.dogray.gen.model</modelPackage>
+                            <generateModels>true</generateModels>
+
+                            <generateApis>false</generateApis>
+                            <generateModelTests>false</generateModelTests>
+                            <generateApiTests>false</generateApiTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <output>${project.build.directory}/generated-sources</output>
+
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <dependencies>
+
+                    <!-- Override parser to apply fix -->
+                    <dependency>
+                        <groupId>io.swagger.parser.v3</groupId>
+                        <artifactId>swagger-parser</artifactId>
+                        <version>${swagger.parser.version}</version>
+                    </dependency>
+
+                </dependencies>
+
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+</project>
+
+
